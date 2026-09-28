@@ -645,6 +645,28 @@ public class RabbitMqMessageReceiverTests
         receivedMessage.IsEventRelated.ShouldBeTrue();
     }
 
+    [Fact]
+    public void WhenBasicPropertiesIndicatesHeadersArePresentButAreNullThenDoesNotThrow()
+    {
+        FeedMessage receivedMessage = null;
+        var sentTimestamp = DateTime.Now.Ticks;
+        var oddsChange = GetOddsChangeWithSingleMarket();
+        var xmlBody = FeedMessageBuilder.BuildMessageBody(oddsChange);
+        var messageData = Encoding.UTF8.GetBytes(xmlBody);
+        _messageReceiver.FeedMessageReceived += (_, args) => receivedMessage = args.Message;
+
+        var basicPropertiesMock = new Mock<IBasicProperties>();
+        basicPropertiesMock.Setup(s => s.IsHeadersPresent()).Returns(true);
+        basicPropertiesMock.Setup(s => s.Headers).Returns((IDictionary<string, object>)null);
+
+        _messageReceiver.Open(MessageInterest.AllMessages, FeedRoutingKeyBuilder.GetStandardKeys());
+
+        _mockRabbitChannel.Raise(mock => mock.Received += null, GetBasicDeliverEventArgsWithBodyAndNullRoutingKey(basicPropertiesMock.Object, messageData));
+
+        receivedMessage.GeneratedAt.ShouldBe(oddsChange.GeneratedAt);
+        receivedMessage.SentAt.ShouldBe(oddsChange.GeneratedAt + 1);
+    }
+
     private static odds_change GetOddsChangeWithSingleMarket()
     {
         return OddsChangeBuilder.Create()

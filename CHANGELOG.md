@@ -1,6 +1,10 @@
 # Change Log
 
-## 3.11.0
+## 3.12.0
+- Added each-way settlement details on bet settlement outcomes via the new `IOutcomeSettlementV2` interface (cast the settled outcome to this interface), exposing `EachWayResult`, `EachWayPlaceFactor`, and `DeadHeatFactorPlace`. Each-way result values the SDK does not recognize are reported as `EachWayResult.UnsupportedBySdk`.
+- Fixed an issue where feed messages failed to process when AMQP headers were marked present but the header collection was null or empty.
+
+## 2026-06-01 3.11.0
 - Extended feed messages with IMessageV2 interface exposing MessageHeaders
 
 ## 2026-05-20 3.10.0

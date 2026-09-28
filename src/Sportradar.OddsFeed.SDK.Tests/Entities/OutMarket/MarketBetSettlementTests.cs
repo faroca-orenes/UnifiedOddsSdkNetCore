@@ -6,6 +6,7 @@ using System.Linq;
 using Moq;
 using Shouldly;
 using Sportradar.OddsFeed.SDK.Common;
+using Sportradar.OddsFeed.SDK.Entities;
 using Sportradar.OddsFeed.SDK.Entities.Rest;
 using Sportradar.OddsFeed.SDK.Entities.Rest.Enums;
 using Sportradar.OddsFeed.SDK.Tests.Common;
@@ -72,5 +73,136 @@ public class MarketBetSettlementTests
         market.OutcomeSettlements.ShouldNotBeNull();
         market.OutcomeSettlements.ShouldHaveSingleItem();
         market.OutcomeSettlements.First(x => x.Id == outcomeId.ToString()).OutcomeResult.ShouldBe(OutcomeResult.UnsupportedBySdk);
+    }
+
+    [Theory]
+    [InlineData("winner|place", EachWayResult.WinnerPlace)]
+    [InlineData("place", EachWayResult.Place)]
+    [InlineData("future-value-api-introduces", EachWayResult.UnsupportedBySdk)]
+    public void EachWayAttributesAreReturnedWhenPresentOnOutcome(string eachWayResultFeedMessage, EachWayResult? expectedEachWayResult)
+    {
+        var marketFactory = MarketFactoryBuilder.BuilderStubbingOutSportEventAndCaches
+                                           .StubbingOutCaches()
+                                           .Build();
+
+        const int outcomeId = 70;
+        const double eachWayFactor = 0.25;
+        const double deadHeatFactorPlace = 0.5;
+        var betSettlementWithOutcomes = BetSettlementMarketBuilder.Create()
+                                                                  .WithId(AnyMarketId)
+                                                                  .AddOutcome(BetSettlementMarketOutcomeBuilder.Create()
+                                                                                                              .WithId(outcomeId)
+                                                                                                              .WithResult(1)
+                                                                                                              .WithEachWayResult(eachWayResultFeedMessage)
+                                                                                                              .WithEachWayFactor(eachWayFactor)
+                                                                                                              .WithDeadHeatFactorPlace(deadHeatFactorPlace))
+                                                                  .Build();
+
+        var sportEvent = new Mock<ISportEvent>().Object;
+        IReadOnlyCollection<CultureInfo> cultures = [TestData.Culture];
+
+        var market = marketFactory.GetMarketWithResults(sportEvent, betSettlementWithOutcomes, AnyProducerId, AnySportId, cultures);
+
+        market.OutcomeSettlements.ShouldNotBeNull();
+        market.OutcomeSettlements.ShouldHaveSingleItem();
+        var settlement = (IOutcomeSettlementV2)market.OutcomeSettlements.First(x => x.Id == outcomeId.ToString());
+        settlement.EachWayResult.ShouldBe(expectedEachWayResult);
+        settlement.EachWayPlaceFactor.ShouldBe(eachWayFactor);
+        settlement.DeadHeatFactorPlace.ShouldBe(deadHeatFactorPlace);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    [InlineData("   ")]
+    [InlineData(null)]
+    public void EachWayResultIsNullWhenNullOrEmpty(string eachWayResultFeedMessage)
+    {
+        var marketFactory = MarketFactoryBuilder.BuilderStubbingOutSportEventAndCaches
+                                           .StubbingOutCaches()
+                                           .Build();
+
+        const int outcomeId = 70;
+        const double eachWayFactor = 0.25;
+        const double deadHeatFactorPlace = 0.5;
+        var betSettlementWithOutcomes = BetSettlementMarketBuilder.Create()
+                                                                  .WithId(AnyMarketId)
+                                                                  .AddOutcome(BetSettlementMarketOutcomeBuilder.Create()
+                                                                                                              .WithId(outcomeId)
+                                                                                                              .WithResult(1)
+                                                                                                              .WithEachWayResult(eachWayResultFeedMessage)
+                                                                                                              .WithEachWayFactor(eachWayFactor)
+                                                                                                              .WithDeadHeatFactorPlace(deadHeatFactorPlace))
+                                                                  .Build();
+
+        var sportEvent = new Mock<ISportEvent>().Object;
+        IReadOnlyCollection<CultureInfo> cultures = [TestData.Culture];
+
+        var market = marketFactory.GetMarketWithResults(sportEvent, betSettlementWithOutcomes, AnyProducerId, AnySportId, cultures);
+
+        market.OutcomeSettlements.ShouldNotBeNull();
+        market.OutcomeSettlements.ShouldHaveSingleItem();
+        var settlement = (IOutcomeSettlementV2)market.OutcomeSettlements.First(x => x.Id == outcomeId.ToString());
+        settlement.EachWayResult.ShouldBeNull();
+        settlement.EachWayPlaceFactor.ShouldBe(eachWayFactor);
+        settlement.DeadHeatFactorPlace.ShouldBe(deadHeatFactorPlace);
+    }
+
+    [Fact]
+    public void EachWayIsNullWhenNotPresent()
+    {
+        var marketFactory = MarketFactoryBuilder.BuilderStubbingOutSportEventAndCaches
+                                           .StubbingOutCaches()
+                                           .Build();
+
+        const int outcomeId = 70;
+        const double eachWayFactor = 0.25;
+        const double deadHeatFactorPlace = 0.5;
+        var betSettlementWithOutcomes = BetSettlementMarketBuilder.Create()
+                                                                  .WithId(AnyMarketId)
+                                                                  .AddOutcome(BetSettlementMarketOutcomeBuilder.Create()
+                                                                                                              .WithId(outcomeId)
+                                                                                                              .WithResult(1)
+                                                                                                              .WithEachWayFactor(eachWayFactor)
+                                                                                                              .WithDeadHeatFactorPlace(deadHeatFactorPlace))
+                                                                  .Build();
+
+        var sportEvent = new Mock<ISportEvent>().Object;
+        IReadOnlyCollection<CultureInfo> cultures = [TestData.Culture];
+
+        var market = marketFactory.GetMarketWithResults(sportEvent, betSettlementWithOutcomes, AnyProducerId, AnySportId, cultures);
+
+        market.OutcomeSettlements.ShouldNotBeNull();
+        market.OutcomeSettlements.ShouldHaveSingleItem();
+        var settlement = (IOutcomeSettlementV2)market.OutcomeSettlements.First(x => x.Id == outcomeId.ToString());
+        settlement.EachWayResult.ShouldBeNull();
+        settlement.EachWayPlaceFactor.ShouldBe(eachWayFactor);
+        settlement.DeadHeatFactorPlace.ShouldBe(deadHeatFactorPlace);
+    }
+
+    [Fact]
+    public void EachWayAttributesAreNullWhenAbsentOnOutcome()
+    {
+        var marketFactory = MarketFactoryBuilder.BuilderStubbingOutSportEventAndCaches
+                                           .StubbingOutCaches()
+                                           .Build();
+
+        const int outcomeId = 70;
+        var betSettlementWithOutcomes = BetSettlementMarketBuilder.Create()
+                                                                  .WithId(AnyMarketId)
+                                                                  .AddOutcome(outcomeId, 1)
+                                                                  .Build();
+
+        var sportEvent = new Mock<ISportEvent>().Object;
+        IReadOnlyCollection<CultureInfo> cultures = [TestData.Culture];
+
+        var market = marketFactory.GetMarketWithResults(sportEvent, betSettlementWithOutcomes, AnyProducerId, AnySportId, cultures);
+
+        market.OutcomeSettlements.ShouldNotBeNull();
+        market.OutcomeSettlements.ShouldHaveSingleItem();
+        var settlement = (IOutcomeSettlementV2)market.OutcomeSettlements.First(x => x.Id == outcomeId.ToString());
+        settlement.EachWayResult.ShouldBeNull();
+        settlement.EachWayPlaceFactor.ShouldBeNull();
+        settlement.DeadHeatFactorPlace.ShouldBeNull();
     }
 }

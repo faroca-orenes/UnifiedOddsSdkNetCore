@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+// Copyright (C) Sportradar AG.See LICENSE for full license governing this code
+
+using System.Diagnostics;
 using System.Diagnostics.Metrics;
 
 namespace Sportradar.OddsFeed.SDK.DemoProject.Utils;

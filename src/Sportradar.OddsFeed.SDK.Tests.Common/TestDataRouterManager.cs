@@ -148,12 +148,13 @@ internal class TestDataRouterManager : IDataRouterManager
     private static string GetFile(string template, CultureInfo culture)
     {
         var filePath = FileHelper.FindFile(template.Replace("{culture}", culture.TwoLetterISOLanguageName));
-        if (string.IsNullOrEmpty(filePath))
+        var fi = new FileInfo(filePath);
+        if (!fi.Exists)
         {
             filePath = FileHelper.FindFile(template.Replace("{culture}", TestData.Culture.TwoLetterISOLanguageName));
+            fi = new FileInfo(filePath);
         }
 
-        var fi = new FileInfo(filePath);
         if (fi.Exists)
         {
             return fi.FullName;
