@@ -1,7 +1,6 @@
 // Copyright (C) Sportradar AG.See LICENSE for full license governing this code
 
 using Dawn;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Sportradar.OddsFeed.SDK.Api.Internal.Caching;
 using Sportradar.OddsFeed.SDK.Common;
@@ -52,7 +51,6 @@ namespace Sportradar.OddsFeed.SDK.Entities.Rest.Internal.EntitiesImpl
         /// </param>
         /// <param name="exceptionStrategy">A <see cref="ExceptionHandlingStrategy" /> used in sport entity factory</param>
         /// <param name="rootCompetitionCacheItem">A root <see cref="CompetitionCacheItem" /> to which this competitor belongs to</param>
-        /// <param name="memoryCache">A <see cref="IMemoryCache" /> used for caching</param>
         [SuppressMessage("CodeQuality", "IDE0058:Expression value is never used", Justification = "Allowed for Guard statements")]
         public Competitor(CompetitorCacheItem ci,
                           IProfileCache profileCache,
@@ -90,7 +88,6 @@ namespace Sportradar.OddsFeed.SDK.Entities.Rest.Internal.EntitiesImpl
         /// </param>
         /// <param name="exceptionStrategy">A <see cref="ExceptionHandlingStrategy" /> used in sport entity factory</param>
         /// <param name="competitorsReferences">A list of <see cref="ReferenceIdCacheItem" /> for all competitors</param>
-        /// <param name="memoryCache">A <see cref="IMemoryCache" /> used for caching</param>
         [SuppressMessage("CodeQuality", "IDE0058:Expression value is never used", Justification = "Allowed for Guard statements")]
         public Competitor(CompetitorCacheItem ci,
                           IProfileCache profileCache,
@@ -139,7 +136,6 @@ namespace Sportradar.OddsFeed.SDK.Entities.Rest.Internal.EntitiesImpl
         /// </param>
         /// <param name="exceptionStrategy">A <see cref="ExceptionHandlingStrategy" /> used in sport entity factory</param>
         /// <param name="competitorsReferences">A list of <see cref="ReferenceIdCacheItem" /> for all competitors</param>
-        /// <param name="memoryCache">A <see cref="IMemoryCache" /> used for caching</param>
         [SuppressMessage("CodeQuality", "IDE0058:Expression value is never used", Justification = "Allowed for Guard statements")]
         public Competitor(Urn competitorId,
                           IProfileCache profileCache,
